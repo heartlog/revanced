@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReVanced Release Tracker</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffd;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+            --color-secondary: rgba(94, 82, 64, 0.12);
+            --color-success: #21808d;
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #1f2121;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-card-border: rgba(119, 124, 124, 0.2);
+                --color-secondary: rgba(119, 124, 124, 0.15);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            padding: var(--space-20);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--space-24);
+            padding: var(--space-24) 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: var(--space-12);
+            color: var(--color-text);
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .repo-link {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .repo-link:hover {
+            text-decoration: underline;
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--space-12);
+            margin-bottom: var(--space-24);
+            flex-wrap: wrap;
+            align-items: center;
+            background: var(--color-surface);
+            padding: var(--space-16);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: var(--space-12);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: var(--space-8);
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: var(--space-8) var(--space-16);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: var(--color-secondary);
+        }
+
+        .filter-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-16);
+            margin-bottom: var(--space-24);
+        }
+
+        .stat-card {
+            background: var(--color-surface);
+            padding: var(--space-16);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: var(--space-8);
+        }
+
+        .stat-label {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .releases-grid {
+            display: grid;
+            gap: var(--space-16);
+        }
+
+        .release-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-20);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .release-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .release-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--space-16);
+            flex-wrap: wrap;
+            gap: var(--space-12);
+        }
+
+        .release-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .release-date {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-right: var(--space-8);
+            margin-bottom: var(--space-8);
+        }
+
+        .category-youtube { background: rgba(255, 0, 0, 0.15); color: #d32f2f; border: 1px solid rgba(255, 0, 0, 0.3); }
+        .category-music { background: rgba(255, 152, 0, 0.15); color: #e65100; border: 1px solid rgba(255, 152, 0, 0.3); }
+        .category-social { background: rgba(33, 150, 243, 0.15); color: #1565c0; border: 1px solid rgba(33, 150, 243, 0.3); }
+        .category-photos { background: rgba(76, 175, 80, 0.15); color: #2e7d32; border: 1px solid rgba(76, 175, 80, 0.3); }
+        .category-reddit { background: rgba(255, 87, 34, 0.15); color: #d84315; border: 1px solid rgba(255, 87, 34, 0.3); }
+        .category-tiktok { background: rgba(0, 0, 0, 0.15); color: var(--color-text); border: 1px solid rgba(0, 0, 0, 0.3); }
+        .category-twitter { background: rgba(29, 161, 242, 0.15); color: #0d47a1; border: 1px solid rgba(29, 161, 242, 0.3); }
+        .category-messenger { background: rgba(0, 132, 255, 0.15); color: #01579b; border: 1px solid rgba(0, 132, 255, 0.3); }
+        .category-twitch { background: rgba(145, 70, 255, 0.15); color: #4a148c; border: 1px solid rgba(145, 70, 255, 0.3); }
+        .category-spotify { background: rgba(30, 215, 96, 0.15); color: #1b5e20; border: 1px solid rgba(30, 215, 96, 0.3); }
+        .category-other { background: var(--color-secondary); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+
+        .assets-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--space-12);
+        }
+
+        .assets-table th,
+        .assets-table td {
+            padding: var(--space-12);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .assets-table th {
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .assets-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .file-name {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .file-name:hover {
+            text-decoration: underline;
+        }
+
+        .file-size {
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: var(--space-24);
+            color: var(--color-text-secondary);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: var(--space-24);
+            color: var(--color-text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .error {
+            background: rgba(192, 21, 47, 0.1);
+            color: #c0152f;
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            border: 1px solid rgba(192, 21, 47, 0.3);
+            margin-bottom: var(--space-16);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .assets-table {
+                font-size: 0.85rem;
+            }
+
+            .assets-table th,
+            .assets-table td {
+                padding: var(--space-8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 ReVanced Release Tracker</h1>
+            <p class="subtitle">
+                Track releases from <a href="https://github.com/FiorenMas/Revanced-And-Revanced-Extended-Non-Root" target="_blank" class="repo-link">FiorenMas/Revanced-And-Revanced-Extended-Non-Root</a>
+            </p>
+        </header>
+
+        <div class="controls">
+            <input type="text" id="searchBox" class="search-box" placeholder="Search by app name...">
+            <div class="filter-group">
+                <button class="filter-btn active" data-category="all">All Apps</button>
+                <button class="filter-btn" data-category="youtube">YouTube</button>
+                <button class="filter-btn" data-category="music">Music</button>
+                <button class="filter-btn" data-category="social">Social</button>
+                <button class="filter-btn" data-category="photos">Photos</button>
+                <button class="filter-btn" data-category="other">Other</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalFiles">0</div>
+                <div class="stat-label">Total Files</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalSize">0 GB</div>
+                <div class="stat-label">Total Size</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="lastUpdate">-</div>
+                <div class="stat-label">Last Updated</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="appCount">0</div>
+                <div class="stat-label">Apps Available</div>
+            </div>
+        </div>
+
+        <div id="releasesContainer">
+            <div class="loading">Loading releases...</div>
+        </div>
+    </div>
+
+    <script>
+        const GITHUB_API = 'https://api.github.com/repos/FiorenMas/Revanced-And-Revanced-Extended-Non-Root/releases';
+        
+        let allReleases = [];
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        const categoryMap = {
+            'youtube': ['youtube', 'yt'],
+            'music': ['music', 'spotify'],
+            'social': ['facebook', 'instagram', 'twitter', 'reddit', 'messenger', 'tiktok', 'twitch'],
+            'photos': ['photos'],
+        };
+
+        function categorizeApp(fileName) {
+            const lowerName = fileName.toLowerCase();
+            
+            if (lowerName.includes('youtube') || lowerName.includes('yt-')) {
+                return lowerName.includes('music') ? 'music' : 'youtube';
+            }
+            if (lowerName.includes('music') || lowerName.includes('spotify')) return 'music';
+            if (lowerName.includes('facebook') || lowerName.includes('messenger')) return 'social';
+            if (lowerName.includes('instagram') || lowerName.includes('twitter') || lowerName.includes('reddit') || lowerName.includes('tiktok') || lowerName.includes('twitch')) return 'social';
+            if (lowerName.includes('photos') || lowerName.includes('gg-photos')) return 'photos';
+            
+            return 'other';
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function getRelativeTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+            if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)}mo ago`;
+            return `${Math.floor(diffInSeconds / 31536000)}y ago`;
+        }
+
+        async function fetchReleases() {
+            try {
+                const response = await fetch(GITHUB_API);
+                if (!response.ok) throw new Error('Failed to fetch releases');
+                
+                const releases = await response.json();
+                return releases;
+            } catch (error) {
+                console.error('Error fetching releases:', error);
+                return [];
+            }
+        }
+
+        function groupAssetsByApp(assets) {
+            const grouped = {};
+            
+            assets.forEach(asset => {
+                const category = categorizeApp(asset.name);
+                const appName = extractAppName(asset.name);
+                const key = `${appName}-${category}`;
+                
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        appName: appName,
+                        category: category,
+                        files: []
+                    };
+                }
+                
+                grouped[key].files.push(asset);
+            });
+            
+            return Object.values(grouped).sort((a, b) => a.appName.localeCompare(b.appName));
+        }
+
+        function extractAppName(fileName) {
+            let name = fileName.replace('.apk', '').replace('.zip', '').replace('.tar.gz', '');
+            name = name.split('-')[0];
+            return name.charAt(0).toUpperCase() + name.slice(1);
+        }
+
+        function updateStats(releases) {
+            let totalFiles = 0;
+            let totalBytes = 0;
+            let latestDate = null;
+            const uniqueApps = new Set();
+
+            releases.forEach(release => {
+                release.assets.forEach(asset => {
+                    if (asset.name.endsWith('.apk')) {
+                        totalFiles++;
+                        totalBytes += asset.size;
+                        uniqueApps.add(extractAppName(asset.name));
+                        
+                        const assetDate = new Date(asset.updated_at);
+                        if (!latestDate || assetDate > latestDate) {
+                            latestDate = assetDate;
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('totalFiles').textContent = totalFiles;
+            document.getElementById('totalSize').textContent = formatBytes(totalBytes);
+            document.getElementById('lastUpdate').textContent = latestDate ? getRelativeTime(latestDate) : '-';
+            document.getElementById('appCount').textContent = uniqueApps.size;
+        }
+
+        function renderReleases(releases) {
+            const container = document.getElementById('releasesContainer');
+            
+            if (releases.length === 0) {
+                container.innerHTML = '<div class="no-results">No releases found</div>';
+                return;
+            }
+
+            const release = releases[0];
+            const apkAssets = release.assets.filter(asset => asset.name.endsWith('.apk'));
+            const groupedApps = groupAssetsByApp(apkAssets);
+
+            let filteredApps = groupedApps;
+            
+            if (currentFilter !== 'all') {
+                filteredApps = groupedApps.filter(app => app.category === currentFilter);
+            }
+            
+            if (searchQuery) {
+                filteredApps = filteredApps.filter(app => 
+                    app.appName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    app.files.some(file => file.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                );
+            }
+
+            if (filteredApps.length === 0) {
+                container.innerHTML = '<div class="no-results">No apps match your filters</div>';
+                return;
+            }
+
+            let html = '<div class="releases-grid">';
+            
+            filteredApps.forEach(app => {
+                html += `
+                    <div class="release-card">
+                        <div class="release-header">
+                            <div>
+                                <h2 class="release-title">${app.appName}</h2>
+                                <span class="category-badge category-${app.category}">${app.category}</span>
+                            </div>
+                        </div>
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Version Type</th>
+                                    <th>Size</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                app.files.forEach(file => {
+                    const versionType = file.name.includes('beta') ? 'Beta' : 
+                                      file.name.includes('lite') ? 'Lite' : 
+                                      file.name.includes('extended') ? 'Extended' : 'Stable';
+                    
+                    html += `
+                        <tr>
+                            <td>
+                                <a href="${file.browser_download_url}" class="file-name" target="_blank">
+                                    ${file.name}
+                                </a>
+                            </td>
+                            <td>${versionType}</td>
+                            <td class="file-size">${formatBytes(file.size)}</td>
+                            <td>
+                                <span title="${formatDate(file.updated_at)}">
+                                    ${getRelativeTime(file.updated_at)}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderReleases(allReleases);
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.category;
+                renderReleases(allReleases);
+            });
+        });
+
+        async function init() {
+            allReleases = await fetchReleases();
+            if (allReleases.length > 0) {
+                updateStats(allReleases);
+                renderReleases(allReleases);
+            } else {
+                document.getElementById('releasesContainer').innerHTML = 
+                    '<div class="error">Failed to load releases. Please try again later.</div>';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
+
