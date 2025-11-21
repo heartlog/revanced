@@ -1,3 +1,3 @@
 # revanced
 
-ok
+o
