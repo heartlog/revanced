@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,6 +116,41 @@
             gap: var(--space-8);
             flex-wrap: wrap;
         }
+
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-8);
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-reddit { background: rgba(255, 87, 34, 0.15); color: #d84315; border: 1px solid rgba(255, 87, 34, 0.3); }
+        .category-tiktok { background: rgba(0, 0, 0, 0.15); color: var(--color-text); border: 1px solid rgba(0, 0, 0, 0.3); }
+        .category-twitter { background: rgba(29, 161, 242, 0.15); color: #0d47a1; border: 1px solid rgba(29, 161, 242, 0.3); }
+        .category-messenger { background: rgba(0, 132, 255, 0.15); color: #01579b; border: 1px solid rgba(0, 132, 255, 0.3); }
+        .category-twitch { background: rgba(145, 70, 255, 0.15); color: #4a148c; border: 1px solid rgba(145, 70, 255, 0.3); }
+        .category-spotify { background: rgba(30, 215, 96, 0.15); color: #1b5e20; border: 1px solid rgba(30, 215, 96, 0.3); }
+        .category-other { background: var(--color-secondary); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+
+        .variant-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: var(--space-8);
+        }
+
+        .variant-revanced { background: rgba(33, 128, 141, 0.15); color: #21808d; border: 1px solid rgba(33, 128, 141, 0.3); }
+        .variant-extended { background: rgba(156, 39, 176, 0.15); color: #7b1fa2; border: 1px solid rgba(156, 39, 176, 0.3); }
+        .variant-anddea { background: rgba(255, 152, 0, 0.15); color: #e65100; border: 1px solid rgba(255, 152, 0, 0.3); }
 
         .filter-btn {
             padding: var(--space-8) var(--space-16);
@@ -321,13 +357,36 @@
 
         <div class="controls">
             <input type="text" id="searchBox" class="search-box" placeholder="Search by app name...">
-            <div class="filter-group">
-                <button class="filter-btn active" data-category="all">All Apps</button>
-                <button class="filter-btn" data-category="youtube">YouTube</button>
-                <button class="filter-btn" data-category="music">Music</button>
-                <button class="filter-btn" data-category="social">Social</button>
-                <button class="filter-btn" data-category="photos">Photos</button>
-                <button class="filter-btn" data-category="other">Other</button>
+            
+            <div class="filter-section">
+                <div class="filter-label">App Category</div>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-category="all">All Apps</button>
+                    <button class="filter-btn" data-category="youtube">YouTube</button>
+                    <button class="filter-btn" data-category="music">Music</button>
+                    <button class="filter-btn" data-category="social">Social</button>
+                    <button class="filter-btn" data-category="photos">Photos</button>
+                    <button class="filter-btn" data-category="other">Other</button>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-label">Version Type</div>
+                <div class="filter-group">
+                    <button class="filter-btn version-filter active" data-version="all">All Versions</button>
+                    <button class="filter-btn version-filter" data-version="stable">Stable</button>
+                    <button class="filter-btn version-filter" data-version="beta">Beta</button>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-label">Variant</div>
+                <div class="filter-group">
+                    <button class="filter-btn variant-filter active" data-variant="all">All Variants</button>
+                    <button class="filter-btn variant-filter" data-variant="revanced">ReVanced</button>
+                    <button class="filter-btn variant-filter" data-variant="extended">Extended</button>
+                    <button class="filter-btn variant-filter" data-variant="anddea">Anddea Fork</button>
+                </div>
             </div>
         </div>
 
@@ -360,6 +419,8 @@
         
         let allReleases = [];
         let currentFilter = 'all';
+        let versionFilter = 'all';
+        let variantFilter = 'all';
         let searchQuery = '';
 
         const categoryMap = {
@@ -451,6 +512,18 @@
             return name.charAt(0).toUpperCase() + name.slice(1);
         }
 
+        function detectVariant(fileName) {
+            const lowerName = fileName.toLowerCase();
+            if (lowerName.includes('anddea')) return 'anddea';
+            if (lowerName.includes('extended')) return 'extended';
+            return 'revanced';
+        }
+
+        function getVersionType(fileName) {
+            const lowerName = fileName.toLowerCase();
+            return lowerName.includes('beta') ? 'beta' : 'stable';
+        }
+
         function updateStats(releases) {
             let totalFiles = 0;
             let totalBytes = 0;
@@ -495,6 +568,20 @@
             if (currentFilter !== 'all') {
                 filteredApps = groupedApps.filter(app => app.category === currentFilter);
             }
+
+            if (versionFilter !== 'all') {
+                filteredApps = filteredApps.map(app => ({
+                    ...app,
+                    files: app.files.filter(file => getVersionType(file.name) === versionFilter)
+                })).filter(app => app.files.length > 0);
+            }
+
+            if (variantFilter !== 'all') {
+                filteredApps = filteredApps.map(app => ({
+                    ...app,
+                    files: app.files.filter(file => detectVariant(file.name) === variantFilter)
+                })).filter(app => app.files.length > 0);
+            }
             
             if (searchQuery) {
                 filteredApps = filteredApps.filter(app => 
@@ -515,15 +602,20 @@
                     <div class="release-card">
                         <div class="release-header">
                             <div>
-                                <h2 class="release-title">${app.appName}</h2>
-                                <span class="category-badge category-${app.category}">${app.category}</span>
+                                <h2 class="release-title">
+                                    ${app.appName}
+                                </h2>
+                                <div>
+                                    <span class="category-badge category-${app.category}">${app.category}</span>
+                                </div>
                             </div>
                         </div>
                         <table class="assets-table">
                             <thead>
                                 <tr>
                                     <th>File Name</th>
-                                    <th>Version Type</th>
+                                    <th>Variant</th>
+                                    <th>Version</th>
                                     <th>Size</th>
                                     <th>Updated</th>
                                 </tr>
@@ -532,9 +624,12 @@
                 `;
                 
                 app.files.forEach(file => {
-                    const versionType = file.name.includes('beta') ? 'Beta' : 
-                                      file.name.includes('lite') ? 'Lite' : 
-                                      file.name.includes('extended') ? 'Extended' : 'Stable';
+                    const variant = detectVariant(file.name);
+                    const versionType = getVersionType(file.name);
+                    const variantLabel = variant === 'revanced' ? 'ReVanced' : 
+                                       variant === 'extended' ? 'Extended' : 
+                                       'Anddea Fork';
+                    const versionLabel = versionType === 'beta' ? 'Beta' : 'Stable';
                     
                     html += `
                         <tr>
@@ -543,7 +638,8 @@
                                     ${file.name}
                                 </a>
                             </td>
-                            <td>${versionType}</td>
+                            <td><span class="variant-badge variant-${variant}">${variantLabel}</span></td>
+                            <td>${versionLabel}</td>
                             <td class="file-size">${formatBytes(file.size)}</td>
                             <td>
                                 <span title="${formatDate(file.updated_at)}">
@@ -570,11 +666,29 @@
             renderReleases(allReleases);
         });
 
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        document.querySelectorAll('.filter-btn[data-category]').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.filter-btn[data-category]').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 currentFilter = e.target.dataset.category;
+                renderReleases(allReleases);
+            });
+        });
+
+        document.querySelectorAll('.version-filter').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.version-filter').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                versionFilter = e.target.dataset.version;
+                renderReleases(allReleases);
+            });
+        });
+
+        document.querySelectorAll('.variant-filter').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.variant-filter').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                variantFilter = e.target.dataset.variant;
                 renderReleases(allReleases);
             });
         });
