@@ -1,711 +1,477 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ReVanced Release Tracker</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Load React, ReactDOM, and Babel for in-browser JSX compilation -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-        :root {
-            --color-background: #fcfcf9;
-            --color-surface: #fffffd;
-            --color-text: #13343b;
-            --color-text-secondary: #626c71;
-            --color-primary: #21808d;
-            --color-primary-hover: #1d7480;
-            --color-border: rgba(94, 82, 64, 0.2);
-            --color-card-border: rgba(94, 82, 64, 0.12);
-            --color-secondary: rgba(94, 82, 64, 0.12);
-            --color-success: #21808d;
-            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            --radius-base: 8px;
-            --radius-lg: 12px;
-            --space-8: 8px;
-            --space-12: 12px;
-            --space-16: 16px;
-            --space-20: 20px;
-            --space-24: 24px;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --color-background: #1f2121;
-                --color-surface: #262828;
-                --color-text: #f5f5f5;
-                --color-text-secondary: rgba(167, 169, 169, 0.7);
-                --color-primary: #32b8c6;
-                --color-primary-hover: #2da6b2;
-                --color-border: rgba(119, 124, 124, 0.3);
-                --color-card-border: rgba(119, 124, 124, 0.2);
-                --color-secondary: rgba(119, 124, 124, 0.15);
-            }
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            font-family: var(--font-family-base);
-            background: var(--color-background);
-            color: var(--color-text);
-            line-height: 1.6;
-            padding: var(--space-20);
+            background-color: #000000; /* True black for AMOLED */
+            color: #e5e5e5;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        header {
-            text-align: center;
-            margin-bottom: var(--space-24);
-            padding: var(--space-24) 0;
+        ::-webkit-scrollbar-track {
+            background: #000000;
         }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: var(--space-12);
-            color: var(--color-text);
+        ::-webkit-scrollbar-thumb {
+            background: #222222;
+            border-radius: 4px;
         }
-
-        .subtitle {
-            color: var(--color-text-secondary);
-            font-size: 1.1rem;
-        }
-
-        .repo-link {
-            color: var(--color-primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .repo-link:hover {
-            text-decoration: underline;
-        }
-
-        .controls {
-            display: flex;
-            gap: var(--space-12);
-            margin-bottom: var(--space-24);
-            flex-wrap: wrap;
-            align-items: center;
-            background: var(--color-surface);
-            padding: var(--space-16);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--color-card-border);
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            padding: var(--space-12);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-base);
-            background: var(--color-background);
-            color: var(--color-text);
-            font-size: 1rem;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: var(--space-8);
-            flex-wrap: wrap;
-        }
-
-        .filter-section {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-8);
-        }
-
-        .filter-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .category-reddit { background: rgba(255, 87, 34, 0.15); color: #d84315; border: 1px solid rgba(255, 87, 34, 0.3); }
-        .category-tiktok { background: rgba(0, 0, 0, 0.15); color: var(--color-text); border: 1px solid rgba(0, 0, 0, 0.3); }
-        .category-twitter { background: rgba(29, 161, 242, 0.15); color: #0d47a1; border: 1px solid rgba(29, 161, 242, 0.3); }
-        .category-messenger { background: rgba(0, 132, 255, 0.15); color: #01579b; border: 1px solid rgba(0, 132, 255, 0.3); }
-        .category-twitch { background: rgba(145, 70, 255, 0.15); color: #4a148c; border: 1px solid rgba(145, 70, 255, 0.3); }
-        .category-spotify { background: rgba(30, 215, 96, 0.15); color: #1b5e20; border: 1px solid rgba(30, 215, 96, 0.3); }
-        .category-other { background: var(--color-secondary); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
-
-        .variant-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-left: var(--space-8);
-        }
-
-        .variant-revanced { background: rgba(33, 128, 141, 0.15); color: #21808d; border: 1px solid rgba(33, 128, 141, 0.3); }
-        .variant-extended { background: rgba(156, 39, 176, 0.15); color: #7b1fa2; border: 1px solid rgba(156, 39, 176, 0.3); }
-        .variant-anddea { background: rgba(255, 152, 0, 0.15); color: #e65100; border: 1px solid rgba(255, 152, 0, 0.3); }
-
-        .filter-btn {
-            padding: var(--space-8) var(--space-16);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-base);
-            background: var(--color-background);
-            color: var(--color-text);
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .filter-btn:hover {
-            background: var(--color-secondary);
-        }
-
-        .filter-btn.active {
-            background: var(--color-primary);
-            color: white;
-            border-color: var(--color-primary);
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-16);
-            margin-bottom: var(--space-24);
-        }
-
-        .stat-card {
-            background: var(--color-surface);
-            padding: var(--space-16);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--color-card-border);
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--color-primary);
-            margin-bottom: var(--space-8);
-        }
-
-        .stat-label {
-            color: var(--color-text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .releases-grid {
-            display: grid;
-            gap: var(--space-16);
-        }
-
-        .release-card {
-            background: var(--color-surface);
-            border: 1px solid var(--color-card-border);
-            border-radius: var(--radius-lg);
-            padding: var(--space-20);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .release-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .release-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: var(--space-16);
-            flex-wrap: wrap;
-            gap: var(--space-12);
-        }
-
-        .release-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--color-text);
-        }
-
-        .release-date {
-            color: var(--color-text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .category-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-right: var(--space-8);
-            margin-bottom: var(--space-8);
-        }
-
-        .category-youtube { background: rgba(255, 0, 0, 0.15); color: #d32f2f; border: 1px solid rgba(255, 0, 0, 0.3); }
-        .category-music { background: rgba(255, 152, 0, 0.15); color: #e65100; border: 1px solid rgba(255, 152, 0, 0.3); }
-        .category-social { background: rgba(33, 150, 243, 0.15); color: #1565c0; border: 1px solid rgba(33, 150, 243, 0.3); }
-        .category-photos { background: rgba(76, 175, 80, 0.15); color: #2e7d32; border: 1px solid rgba(76, 175, 80, 0.3); }
-        .category-reddit { background: rgba(255, 87, 34, 0.15); color: #d84315; border: 1px solid rgba(255, 87, 34, 0.3); }
-        .category-tiktok { background: rgba(0, 0, 0, 0.15); color: var(--color-text); border: 1px solid rgba(0, 0, 0, 0.3); }
-        .category-twitter { background: rgba(29, 161, 242, 0.15); color: #0d47a1; border: 1px solid rgba(29, 161, 242, 0.3); }
-        .category-messenger { background: rgba(0, 132, 255, 0.15); color: #01579b; border: 1px solid rgba(0, 132, 255, 0.3); }
-        .category-twitch { background: rgba(145, 70, 255, 0.15); color: #4a148c; border: 1px solid rgba(145, 70, 255, 0.3); }
-        .category-spotify { background: rgba(30, 215, 96, 0.15); color: #1b5e20; border: 1px solid rgba(30, 215, 96, 0.3); }
-        .category-other { background: var(--color-secondary); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
-
-        .assets-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: var(--space-12);
-        }
-
-        .assets-table th,
-        .assets-table td {
-            padding: var(--space-12);
-            text-align: left;
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .assets-table th {
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .assets-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .file-name {
-            color: var(--color-primary);
-            text-decoration: none;
-            font-weight: 500;
-            word-break: break-word;
-        }
-
-        .file-name:hover {
-            text-decoration: underline;
-        }
-
-        .file-size {
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .loading {
-            text-align: center;
-            padding: var(--space-24);
-            color: var(--color-text-secondary);
-        }
-
-        .no-results {
-            text-align: center;
-            padding: var(--space-24);
-            color: var(--color-text-secondary);
-            font-size: 1.1rem;
-        }
-
-        .error {
-            background: rgba(192, 21, 47, 0.1);
-            color: #c0152f;
-            padding: var(--space-16);
-            border-radius: var(--radius-base);
-            border: 1px solid rgba(192, 21, 47, 0.3);
-            margin-bottom: var(--space-16);
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8rem;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                min-width: 100%;
-            }
-
-            .assets-table {
-                font-size: 0.85rem;
-            }
-
-            .assets-table th,
-            .assets-table td {
-                padding: var(--space-8);
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333333;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔧 ReVanced Release Tracker</h1>
-            <p class="subtitle">
-                Track releases from <a href="https://github.com/FiorenMas/Revanced-And-Revanced-Extended-Non-Root" target="_blank" class="repo-link">FiorenMas/Revanced-And-Revanced-Extended-Non-Root</a>
-            </p>
-        </header>
+    <div id="root"></div>
 
-        <div class="controls">
-            <input type="text" id="searchBox" class="search-box" placeholder="Search by app name...">
-            
-            <div class="filter-section">
-                <div class="filter-label">App Category</div>
-                <div class="filter-group">
-                    <button class="filter-btn active" data-category="all">All Apps</button>
-                    <button class="filter-btn" data-category="youtube">YouTube</button>
-                    <button class="filter-btn" data-category="music">Music</button>
-                    <button class="filter-btn" data-category="social">Social</button>
-                    <button class="filter-btn" data-category="photos">Photos</button>
-                    <button class="filter-btn" data-category="other">Other</button>
-                </div>
-            </div>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, Fragment } = React;
 
-            <div class="filter-section">
-                <div class="filter-label">Version Type</div>
-                <div class="filter-group">
-                    <button class="filter-btn version-filter active" data-version="all">All Versions</button>
-                    <button class="filter-btn version-filter" data-version="stable">Stable</button>
-                    <button class="filter-btn version-filter" data-version="beta">Beta</button>
-                </div>
-            </div>
+        // --- SVGs / Icons ---
+        const WrenchIcon = () => (
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-500">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+        );
 
-            <div class="filter-section">
-                <div class="filter-label">Variant</div>
-                <div class="filter-group">
-                    <button class="filter-btn variant-filter active" data-variant="all">All Variants</button>
-                    <button class="filter-btn variant-filter" data-variant="revanced">ReVanced</button>
-                    <button class="filter-btn variant-filter" data-variant="extended">Extended</button>
-                    <button class="filter-btn variant-filter" data-variant="anddea">Anddea Fork</button>
-                </div>
-            </div>
-        </div>
+        const RefreshIcon = ({ className }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+        );
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="totalFiles">0</div>
-                <div class="stat-label">Total Files</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalSize">0 GB</div>
-                <div class="stat-label">Total Size</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="lastUpdate">-</div>
-                <div class="stat-label">Last Updated</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="appCount">0</div>
-                <div class="stat-label">Apps Available</div>
-            </div>
-        </div>
+        // --- Constants ---
+        const CATEGORIES = ['All Apps', 'YouTube', 'Music', 'Social', 'Video', 'Photos', 'Browser', 'Productivity', 'Utility', 'Other'];
+        const VERSION_TYPES = ['All Versions', 'Stable', 'Beta'];
+        const VARIANTS = ['All Variants', 'ReVanced', 'Morphe', 'Extended / RVX', 'Anddea Fork'];
+        const REPO_URL = 'FiorenMas/Revanced-And-Revanced-Extended-Non-Root';
 
-        <div id="releasesContainer">
-            <div class="loading">Loading releases...</div>
-        </div>
-    </div>
+        // --- Parser Logic ---
+        const parseAssetInfo = (asset) => {
+          const name = asset.name.toLowerCase();
+          
+          let appName = 'Unknown';
+          let category = 'Other';
+          let variant = 'ReVanced'; // Default assumption
+          let versionType = 'Stable';
 
-    <script>
-        const GITHUB_API = 'https://api.github.com/repos/FiorenMas/Revanced-And-Revanced-Extended-Non-Root/releases';
-        
-        let allReleases = [];
-        let currentFilter = 'all';
-        let versionFilter = 'all';
-        let variantFilter = 'all';
-        let searchQuery = '';
+          // 1. Variant Detection (Improved Morphe matching)
+          if (name.includes('-extended-') || name.includes('-rvx-') || name.includes('revanced-extended')) variant = 'Extended / RVX';
+          else if (name.includes('-morphe-') || name.includes('morphe')) variant = 'Morphe';
+          else if (name.includes('-anddea-') || name.includes('anddea')) variant = 'Anddea Fork';
 
-        const categoryMap = {
-            'youtube': ['youtube', 'yt'],
-            'music': ['music', 'spotify'],
-            'social': ['facebook', 'instagram', 'twitter', 'reddit', 'messenger', 'tiktok', 'twitch'],
-            'photos': ['photos'],
+          // 2. Version Detection
+          if (name.includes('beta') || name.includes('alpha') || name.includes('dev')) versionType = 'Beta';
+
+          // 3. App Name & Category Detection mapping
+          if (name.startsWith('youtube-music') || name.startsWith('yt-music')) {
+            appName = 'YouTube Music'; category = 'Music';
+          } else if (name.startsWith('youtube') || name.startsWith('yt')) {
+            appName = 'YouTube'; category = 'YouTube';
+          } else if (name.includes('microg') || name.includes('gmscore')) {
+            appName = 'MicroG / GmsCore'; category = 'Utility';
+          } else if (name.startsWith('reddit')) { appName = 'Reddit'; category = 'Social'; }
+          else if (name.startsWith('twitter') || name.startsWith('x-') || name.startsWith('x_')) { appName = 'Twitter / X'; category = 'Social'; }
+          else if (name.startsWith('instagram')) { appName = 'Instagram'; category = 'Social'; }
+          else if (name.startsWith('tiktok')) { appName = 'TikTok'; category = 'Social'; }
+          else if (name.startsWith('facebook') || name.startsWith('fb-')) { appName = 'Facebook'; category = 'Social'; }
+          else if (name.startsWith('messenger')) { appName = 'Messenger'; category = 'Social'; }
+          else if (name.startsWith('twitch')) { appName = 'Twitch'; category = 'Video'; }
+          else if (name.startsWith('bilibili')) { appName = 'Bilibili'; category = 'Video'; }
+          else if (name.startsWith('lightroom')) { appName = 'Lightroom'; category = 'Photos'; }
+          else if (name.startsWith('picsart')) { appName = 'Picsart'; category = 'Photos'; }
+          else if (name.startsWith('chrome') || name.startsWith('brave') || name.startsWith('kiwi')) { 
+            appName = name.split('-')[0].charAt(0).toUpperCase() + name.split('-')[0].slice(1); category = 'Browser'; 
+          }
+          else if (name.startsWith('adguard')) { appName = 'Adguard'; category = 'Utility'; }
+          else if (name.startsWith('battery')) { appName = 'Battery'; category = 'Other'; }
+          else {
+            // Attempt generic extraction for unknown apps
+            const match = name.match(/^([a-z0-9]+)(?:-[a-z0-9]+)?(?:-morphe|-revanced|-extended|-rvx|-anddea|-v\d+)/);
+            if (match && match[1]) {
+                appName = match[1].charAt(0).toUpperCase() + match[1].slice(1);
+            } else {
+                const firstSegment = name.split('-')[0];
+                if(firstSegment && !firstSegment.includes('.')) {
+                     appName = firstSegment.charAt(0).toUpperCase() + firstSegment.slice(1);
+                } else {
+                     appName = name.split('.')[0];
+                }
+            }
+          }
+
+          return {
+            ...asset,
+            parsed: { appName, category, variant, versionType }
+          };
         };
 
-        function categorizeApp(fileName) {
-            const lowerName = fileName.toLowerCase();
-            
-            if (lowerName.includes('youtube') || lowerName.includes('yt-')) {
-                return lowerName.includes('music') ? 'music' : 'youtube';
+        // --- Helpers ---
+        const formatSize = (bytes) => {
+          if (!bytes) return '0 MB';
+          return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        };
+
+        const formatSizeRaw = (bytes) => {
+            if (!bytes) return 0;
+            return (bytes / (1024 * 1024 * 1024)).toFixed(2); // In GB
+        };
+
+        const timeAgo = (dateString) => {
+          if (!dateString) return '-';
+          const date = new Date(dateString);
+          const now = new Date();
+          const seconds = Math.floor((now - date) / 1000);
+          
+          let interval = seconds / 86400;
+          if (interval > 1) return Math.floor(interval) + "d ago";
+          interval = seconds / 3600;
+          if (interval > 1) return Math.floor(interval) + "h ago";
+          interval = seconds / 60;
+          if (interval > 1) return Math.floor(interval) + "m ago";
+          return "just now";
+        };
+
+        // --- Helper for Variant Colors ---
+        const getVariantColor = (variant) => {
+            switch (variant) {
+                case 'Morphe': 
+                    return 'bg-blue-950/40 border-blue-800/50 text-blue-400';
+                case 'Extended / RVX': 
+                    return 'bg-purple-950/40 border-purple-800/50 text-purple-400';
+                case 'Anddea Fork': 
+                    return 'bg-orange-950/40 border-orange-800/50 text-orange-400';
+                case 'ReVanced': 
+                    return 'bg-cyan-950/40 border-cyan-800/50 text-cyan-400';
+                default: 
+                    return 'bg-[#222222] border-[#333333] text-gray-400';
             }
-            if (lowerName.includes('music') || lowerName.includes('spotify')) return 'music';
-            if (lowerName.includes('facebook') || lowerName.includes('messenger')) return 'social';
-            if (lowerName.includes('instagram') || lowerName.includes('twitter') || lowerName.includes('reddit') || lowerName.includes('tiktok') || lowerName.includes('twitch')) return 'social';
-            if (lowerName.includes('photos') || lowerName.includes('gg-photos')) return 'photos';
+        };
+
+        // --- Main Component ---
+        function App() {
+          const [assets, setAssets] = useState([]);
+          const [loading, setLoading] = useState(true);
+          const [error, setError] = useState(null);
+          const [refreshing, setRefreshing] = useState(false);
+
+          // Filters
+          const [searchTerm, setSearchTerm] = useState('');
+          const [activeCategory, setActiveCategory] = useState('All Apps');
+          const [activeVersionType, setActiveVersionType] = useState('All Versions');
+          const [activeVariant, setActiveVariant] = useState('All Variants');
+
+          // Fetch Data
+          const fetchReleases = async (isManualRefresh = false) => {
+            if (isManualRefresh) setRefreshing(true);
+            else setLoading(true);
             
-            return 'other';
-        }
-
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            return date.toLocaleDateString('en-US', options);
-        }
-
-        function getRelativeTime(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffInSeconds = Math.floor((now - date) / 1000);
-            
-            if (diffInSeconds < 60) return 'just now';
-            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-            if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-            if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)}mo ago`;
-            return `${Math.floor(diffInSeconds / 31536000)}y ago`;
-        }
-
-        async function fetchReleases() {
+            setError(null);
             try {
-                const response = await fetch(GITHUB_API);
-                if (!response.ok) throw new Error('Failed to fetch releases');
-                
-                const releases = await response.json();
-                return releases;
-            } catch (error) {
-                console.error('Error fetching releases:', error);
-                return [];
+              const response = await fetch(`https://api.github.com/repos/${REPO_URL}/releases/latest`);
+              
+              if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
+              
+              const releaseData = await response.json();
+              
+              if (releaseData && releaseData.assets) {
+                const parsedAssets = releaseData.assets.map(parseAssetInfo);
+                setAssets(parsedAssets);
+              } else {
+                 setAssets([]);
+              }
+            } catch (err) {
+              setError(err.message);
+            } finally {
+              setLoading(false);
+              setRefreshing(false);
             }
-        }
+          };
 
-        function groupAssetsByApp(assets) {
-            const grouped = {};
-            
-            assets.forEach(asset => {
-                const category = categorizeApp(asset.name);
-                const appName = extractAppName(asset.name);
-                const key = `${appName}-${category}`;
-                
-                if (!grouped[key]) {
-                    grouped[key] = {
-                        appName: appName,
-                        category: category,
-                        files: []
-                    };
-                }
-                
-                grouped[key].files.push(asset);
-            });
-            
-            return Object.values(grouped).sort((a, b) => a.appName.localeCompare(b.appName));
-        }
+          useEffect(() => {
+            fetchReleases();
+          }, []);
 
-        function extractAppName(fileName) {
-            let name = fileName.replace('.apk', '').replace('.zip', '').replace('.tar.gz', '');
-            name = name.split('-')[0];
-            return name.charAt(0).toUpperCase() + name.slice(1);
-        }
-
-        function detectVariant(fileName) {
-            const lowerName = fileName.toLowerCase();
-            if (lowerName.includes('anddea')) return 'anddea';
-            if (lowerName.includes('extended')) return 'extended';
-            return 'revanced';
-        }
-
-        function getVersionType(fileName) {
-            const lowerName = fileName.toLowerCase();
-            return lowerName.includes('beta') ? 'beta' : 'stable';
-        }
-
-        function updateStats(releases) {
-            let totalFiles = 0;
-            let totalBytes = 0;
-            let latestDate = null;
-            const uniqueApps = new Set();
-
-            releases.forEach(release => {
-                release.assets.forEach(asset => {
-                    if (asset.name.endsWith('.apk')) {
-                        totalFiles++;
-                        totalBytes += asset.size;
-                        uniqueApps.add(extractAppName(asset.name));
-                        
-                        const assetDate = new Date(asset.updated_at);
-                        if (!latestDate || assetDate > latestDate) {
-                            latestDate = assetDate;
-                        }
-                    }
-                });
+          // Process data based on filters
+          const processedData = useMemo(() => {
+            // 1. Filter
+            const filtered = assets.filter(asset => {
+              const { parsed } = asset;
+              const matchSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) || parsed.appName.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchCategory = activeCategory === 'All Apps' || parsed.category === activeCategory;
+              const matchVersion = activeVersionType === 'All Versions' || parsed.versionType === activeVersionType;
+              const matchVariant = activeVariant === 'All Variants' || parsed.variant === activeVariant;
+              
+              return matchSearch && matchCategory && matchVersion && matchVariant;
             });
 
-            document.getElementById('totalFiles').textContent = totalFiles;
-            document.getElementById('totalSize').textContent = formatBytes(totalBytes);
-            document.getElementById('lastUpdate').textContent = latestDate ? getRelativeTime(latestDate) : '-';
-            document.getElementById('appCount').textContent = uniqueApps.size;
-        }
+            // 2. Group by App Name
+            const grouped = filtered.reduce((acc, asset) => {
+              const appName = asset.parsed.appName;
+              if (!acc[appName]) {
+                acc[appName] = { category: asset.parsed.category, files: [] };
+              }
+              acc[appName].files.push(asset);
+              return acc;
+            }, {});
 
-        function renderReleases(releases) {
-            const container = document.getElementById('releasesContainer');
+            // Sort files within groups (newest first)
+            Object.keys(grouped).forEach(key => {
+                grouped[key].files.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+            });
+
+            // Sort groups alphabetically
+            const sortedGroupKeys = Object.keys(grouped).sort();
             
-            if (releases.length === 0) {
-                container.innerHTML = '<div class="no-results">No releases found</div>';
-                return;
-            }
+            return {
+                filteredCount: filtered.length,
+                grouped: sortedGroupKeys.map(key => ({ appName: key, ...grouped[key] })),
+                rawFiltered: filtered
+            };
+          }, [assets, searchTerm, activeCategory, activeVersionType, activeVariant]);
 
-            const release = releases[0];
-            const apkAssets = release.assets.filter(asset => asset.name.endsWith('.apk'));
-            const groupedApps = groupAssetsByApp(apkAssets);
-
-            let filteredApps = groupedApps;
+          // Calculate Stats
+          const stats = useMemo(() => {
+            const raw = processedData.rawFiltered;
+            const totalFiles = raw.length;
+            const totalSizeBytes = raw.reduce((sum, asset) => sum + asset.size, 0);
+            const totalSizeGB = formatSizeRaw(totalSizeBytes);
             
-            if (currentFilter !== 'all') {
-                filteredApps = groupedApps.filter(app => app.category === currentFilter);
+            let newestDate = null;
+            if (raw.length > 0) {
+              const dates = raw.map(a => new Date(a.updated_at));
+              newestDate = new Date(Math.max.apply(null, dates));
             }
 
-            if (versionFilter !== 'all') {
-                filteredApps = filteredApps.map(app => ({
-                    ...app,
-                    files: app.files.filter(file => getVersionType(file.name) === versionFilter)
-                })).filter(app => app.files.length > 0);
-            }
+            return {
+              files: totalFiles,
+              size: `${totalSizeGB} GB`,
+              updated: newestDate ? timeAgo(newestDate.toISOString()) : '-',
+              apps: processedData.grouped.length
+            };
+          }, [processedData]);
 
-            if (variantFilter !== 'all') {
-                filteredApps = filteredApps.map(app => ({
-                    ...app,
-                    files: app.files.filter(file => detectVariant(file.name) === variantFilter)
-                })).filter(app => app.files.length > 0);
-            }
-            
-            if (searchQuery) {
-                filteredApps = filteredApps.filter(app => 
-                    app.appName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    app.files.some(file => file.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                );
-            }
+          const FilterButton = ({ active, label, onClick }) => (
+            <button
+              onClick={onClick}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                active 
+                  ? 'bg-cyan-500 text-black' 
+                  : 'bg-transparent text-gray-300 border border-[#333] hover:bg-[#1a1a1a]'
+              }`}
+            >
+              {label}
+            </button>
+          );
 
-            if (filteredApps.length === 0) {
-                container.innerHTML = '<div class="no-results">No apps match your filters</div>';
-                return;
-            }
+          return (
+            <div className="min-h-screen bg-[#000000] text-gray-200 font-sans selection:bg-cyan-500/30 pb-20">
+              
+              <main className="max-w-3xl mx-auto px-4 pt-8 space-y-6">
+                
+                {/* Header Section */}
+                <div className="text-center space-y-2 mb-8">
+                    <h1 className="text-2xl font-semibold flex items-center justify-center gap-3">
+                        <WrenchIcon />
+                        ReVanced Release Tracker
+                    </h1>
+                    <p className="text-gray-500 text-sm">
+                        Track releases from <a href={`https://github.com/${REPO_URL}`} target="_blank" rel="noreferrer" className="text-cyan-600 hover:text-cyan-400">FiorenMas/Revanced-And-Revanced-Extended-Non-Root</a>
+                    </p>
+                </div>
 
-            let html = '<div class="releases-grid">';
-            
-            filteredApps.forEach(app => {
-                html += `
-                    <div class="release-card">
-                        <div class="release-header">
-                            <div>
-                                <h2 class="release-title">
-                                    ${app.appName}
-                                </h2>
-                                <div>
-                                    <span class="category-badge category-${app.category}">${app.category}</span>
+                {/* Filters Card */}
+                <div className="bg-[#111111] border border-[#222222] rounded-xl p-4 md:p-5 space-y-6">
+                    
+                    <div className="space-y-3">
+                        <input 
+                            type="text" 
+                            placeholder="Search apps, APK names, variants..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-cyan-500/50 transition-all placeholder-gray-500"
+                        />
+                        <button 
+                            onClick={() => fetchReleases(true)}
+                            className="w-full bg-[#1a1a1a] hover:bg-[#222] border border-[#333] rounded-lg py-2.5 text-sm flex items-center justify-center gap-2 transition-colors"
+                        >
+                            <RefreshIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </button>
+                    </div>
+
+                    {/* Filter Groups */}
+                    <div className="space-y-5">
+                        <div>
+                            <h3 className="text-xs font-medium text-gray-500 tracking-wider mb-2.5 uppercase">App Category</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {CATEGORIES.map(cat => (
+                                    <FilterButton key={cat} label={cat} active={activeCategory === cat} onClick={() => setActiveCategory(cat)} />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className="text-xs font-medium text-gray-500 tracking-wider mb-2.5 uppercase">Version Type</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {VERSION_TYPES.map(type => (
+                                    <FilterButton key={type} label={type} active={activeVersionType === type} onClick={() => setActiveVersionType(type)} />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className="text-xs font-medium text-gray-500 tracking-wider mb-2.5 uppercase">Variant</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {VARIANTS.map(variant => (
+                                    <FilterButton key={variant} label={variant} active={activeVariant === variant} onClick={() => setActiveVariant(variant)} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    {[
+                        { label: 'Total Files', value: stats.files },
+                        { label: 'Total Size', value: stats.size },
+                        { label: 'Last Updated', value: stats.updated },
+                        { label: 'Apps Available', value: stats.apps },
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-[#111111] border border-[#222222] rounded-xl p-5 flex flex-col items-center justify-center text-center">
+                            <div className={`text-3xl md:text-4xl font-light mb-1 text-cyan-500`}>
+                                {loading ? '-' : stat.value}
+                            </div>
+                            <div className="text-xs text-gray-500">{stat.label}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Loading / Error States */}
+                {error && (
+                    <div className="bg-red-950/30 border border-red-900/50 text-red-400 p-4 rounded-xl text-sm text-center">
+                        {error}
+                    </div>
+                )}
+                
+                {loading && !refreshing && (
+                     <div className="text-center py-10 text-gray-500 text-sm animate-pulse">
+                        Loading repository data...
+                     </div>
+                )}
+
+                {!loading && processedData.grouped.length === 0 && !error && (
+                    <div className="text-center py-12 text-gray-500 bg-[#111111] border border-[#222222] rounded-xl">
+                        No releases found matching your criteria.
+                    </div>
+                )}
+
+                {/* List Section */}
+                {!loading && processedData.grouped.map((group) => (
+                    <div key={group.appName} className="bg-[#111111] border border-[#222222] rounded-xl p-4 md:p-5">
+                        {/* App Header */}
+                        <div className="mb-4">
+                            <h2 className="text-xl font-medium text-gray-100">{group.appName}</h2>
+                            <span className="inline-block mt-1 px-3 py-1 bg-[#222222] rounded-full text-[10px] text-gray-400 lowercase tracking-wider border border-[#333]">
+                                {group.category}
+                            </span>
+                        </div>
+
+                        {/* Files Table Structure */}
+                        <div className="w-full overflow-hidden pb-2">
+                            <div className="w-full overflow-x-auto">
+                                <div className="min-w-[320px]">
+                                    {/* Table Header */}
+                                    <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] gap-2 md:gap-4 pb-3 border-b border-[#2a2a2a] text-[10px] md:text-xs text-gray-500 font-medium">
+                                        <div className="pr-2">File Name</div>
+                                        <div className="text-center">Variant</div>
+                                        <div className="text-center">Version</div>
+                                        <div className="text-right">Size</div>
+                                        <div className="text-right">Updated</div>
+                                    </div>
+
+                                    {/* Table Body */}
+                                    <div className="divide-y divide-[#222222]">
+                                        {group.files.map(file => (
+                                            <a 
+                                                key={file.id} 
+                                                href={file.browser_download_url}
+                                                className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] gap-2 md:gap-4 py-3 md:py-4 items-center hover:bg-[#1a1a1a] transition-colors group cursor-pointer"
+                                            >
+                                                {/* File Name */}
+                                                <div className="text-cyan-600 group-hover:text-cyan-400 text-[11px] md:text-[13px] break-all font-mono leading-tight pr-2">
+                                                    {file.name}
+                                                </div>
+                                                
+                                                {/* Variant Badge */}
+                                                <div className="flex justify-center">
+                                                    <span className={`px-1.5 py-0.5 md:px-2 md:py-1 border rounded text-[9px] md:text-[11px] whitespace-nowrap ${getVariantColor(file.parsed.variant)}`}>
+                                                        {file.parsed.variant}
+                                                    </span>
+                                                </div>
+
+                                                {/* Version Type */}
+                                                <div className="text-[11px] md:text-sm text-gray-300 whitespace-nowrap text-center">
+                                                    {file.parsed.versionType}
+                                                </div>
+
+                                                {/* Size */}
+                                                <div className="text-[11px] md:text-sm text-gray-300 whitespace-nowrap text-right">
+                                                    {formatSize(file.size)}
+                                                </div>
+
+                                                {/* Updated */}
+                                                <div className="text-[11px] md:text-sm text-gray-300 whitespace-nowrap text-right">
+                                                    {timeAgo(file.updated_at)}
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <table class="assets-table">
-                            <thead>
-                                <tr>
-                                    <th>File Name</th>
-                                    <th>Variant</th>
-                                    <th>Version</th>
-                                    <th>Size</th>
-                                    <th>Updated</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                app.files.forEach(file => {
-                    const variant = detectVariant(file.name);
-                    const versionType = getVersionType(file.name);
-                    const variantLabel = variant === 'revanced' ? 'ReVanced' : 
-                                       variant === 'extended' ? 'Extended' : 
-                                       'Anddea Fork';
-                    const versionLabel = versionType === 'beta' ? 'Beta' : 'Stable';
-                    
-                    html += `
-                        <tr>
-                            <td>
-                                <a href="${file.browser_download_url}" class="file-name" target="_blank">
-                                    ${file.name}
-                                </a>
-                            </td>
-                            <td><span class="variant-badge variant-${variant}">${variantLabel}</span></td>
-                            <td>${versionLabel}</td>
-                            <td class="file-size">${formatBytes(file.size)}</td>
-                            <td>
-                                <span title="${formatDate(file.updated_at)}">
-                                    ${getRelativeTime(file.updated_at)}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                html += `
-                            </tbody>
-                        </table>
                     </div>
-                `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
+                ))}
+              </main>
+            </div>
+          );
         }
 
-        document.getElementById('searchBox').addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderReleases(allReleases);
-        });
-
-        document.querySelectorAll('.filter-btn[data-category]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn[data-category]').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentFilter = e.target.dataset.category;
-                renderReleases(allReleases);
-            });
-        });
-
-        document.querySelectorAll('.version-filter').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.version-filter').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                versionFilter = e.target.dataset.version;
-                renderReleases(allReleases);
-            });
-        });
-
-        document.querySelectorAll('.variant-filter').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.variant-filter').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                variantFilter = e.target.dataset.variant;
-                renderReleases(allReleases);
-            });
-        });
-
-        async function init() {
-            allReleases = await fetchReleases();
-            if (allReleases.length > 0) {
-                updateStats(allReleases);
-                renderReleases(allReleases);
-            } else {
-                document.getElementById('releasesContainer').innerHTML = 
-                    '<div class="error">Failed to load releases. Please try again later.</div>';
-            }
-        }
-
-        init();
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
-
