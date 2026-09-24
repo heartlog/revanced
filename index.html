@@ -136,6 +136,9 @@
           else if (name.startsWith('bilibili')) { appName = 'Bilibili'; category = 'Video'; }
           else if (name.startsWith('lightroom')) { appName = 'Lightroom'; category = 'Photos'; }
           else if (name.startsWith('picsart')) { appName = 'Picsart'; category = 'Photos'; }
+          else if (name.startsWith('photos') || name.startsWith('google-photos') || name.match(/^(?:gg)(?:-|_|\b)/i)) { 
+            appName = 'Google Photos'; category = 'Photos'; 
+          }
           else if (name.startsWith('chrome') || name.startsWith('brave') || name.startsWith('kiwi')) { 
             appName = name.split('-')[0].charAt(0).toUpperCase() + name.split('-')[0].slice(1); category = 'Browser'; 
           }
